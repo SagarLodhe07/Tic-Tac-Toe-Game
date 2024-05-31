@@ -6,41 +6,56 @@ function Grid({ numberOfCard }) {
   const [board, setBoard] = useState(Array(numberOfCard).fill(""));
   const [turn, setTurn] = useState(1);
   const [winner, setWinner] = useState(null);
+  const [isDraw, setIsDraw] = useState(false);
   function play(index) {
-    if (turn == 1) {
-      board[index] = "O";
-    } else {
-      board[index] = "X";
+    if (board[index] !== "" || winner || isDraw) {
+      return;
     }
-    setBoard([...board]);
+    const newBoard = [...board];
+    newBoard[index] = turn ? "O" : "X";
+    setBoard(newBoard);
     setTurn(!turn);
-    const win = isWinner(board, turn ? "O" : "X");
+    const win = isWinner(newBoard, turn ? "O" : "X");
     if (win) {
-      setWinner(win);
+      setWinner(turn ? "O" : "X");
+    } else if (newBoard.every((cell) => cell !== "")) {
+      setIsDraw(true);
     }
   }
   function reset() {
     setTurn(true);
     setWinner(null);
+    setIsDraw(false);
     setBoard(Array(numberOfCard).fill(""));
   }
+
   return (
     <div className="grid-wrapper">
       {winner && (
         <>
-          <h2 className="turn-winner"> Winner Is {winner}</h2>
+          <h2 className="turn-winner"> Winner Is : {winner}</h2>
           <button className="reset" onClick={reset}>
-            Reset Game
+            RESET
           </button>
         </>
       )}
-      <h4 className="turn">Current Player: {turn ? "O" : "X"}</h4>
+      {!winner && isDraw && (
+        <>
+          <h2 className="draw-Text">It's Draw</h2>
+          <button className="reset" onClick={reset}>
+          RESET
+          </button>
+        </>
+      )}
+      {!winner && !isDraw && (
+        <h4 className="turn">Current Player: {turn ? "O" : "X"}</h4>
+      )}
       <div className="grid">
         {board.map((element, idx) => (
           <Card
-            gameEnd={winner ? true : false}
+            gameEnd={winner || isDraw ? true : false}
             key={idx}
-            onPlay={play}
+            onPlay={() => play(idx)}
             player={element}
             index={idx}
           />
